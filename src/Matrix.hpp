@@ -18,11 +18,12 @@ private:
 private:
     class Row
     {
-    private:
+    public:
         std::map<col_number, T> m_row;
 
     public:
         Row();
+        Row(const Row& other);
 
         T& operator[](const col_number& col);
         const T& operator[](const col_number& row) const;
@@ -41,9 +42,12 @@ private:
 
 public:
     Matrix();
+    Matrix(const Matrix<T, rows, cols>& other);
     ~Matrix() = default;
 
     void clean_empty();
+    template<class Op>
+    void do_each_element(Op op);
     std::ostream& print_matrix(std::ostream& out) const;
 
     Row& operator[](const row_number& row);
@@ -51,7 +55,7 @@ public:
 
     Matrix<T, rows, cols> operator*(const Matrix<T, rows, cols>& other);
     template<class ScalarType>
-    Matrix<T, rows, cols> operator*(ScalarType scalar);
+    Matrix<T, rows, cols> operator*(const ScalarType& scalar) const;
 };
 
 template<class T, restr_num rows, restr_num cols>
@@ -62,6 +66,12 @@ const T Matrix<T, rows, cols>::default_t = T();
 
 template<class T, restr_num rows, restr_num cols>
 Matrix<T, rows, cols>::Matrix()
+{
+}
+
+template<class T, restr_num rows, restr_num cols>
+Matrix<T, rows, cols>::Matrix(const Matrix<T, rows, cols>& other)
+    : m_matrix(other.m_matrix)
 {
 }
 
@@ -86,7 +96,36 @@ const typename Matrix<T, rows, cols>::Row& Matrix<T, rows, cols>::operator[](con
 }
 
 template<class T, restr_num rows, restr_num cols>
+Matrix<T, rows, cols> Matrix<T, rows, cols>::operator*(const Matrix<T, rows, cols>& other)
+{
+    // TODO: Implement
+
+    return other;
+}
+
+template<class T, restr_num rows, restr_num cols>
+template<class ScalarType>
+Matrix<T, rows, cols> Matrix<T, rows, cols>::operator*(const ScalarType& scalar) const
+{
+    Matrix<T, rows, cols> ret(*this);
+    ret.do_each_element([scalar](const T& val)->T{ return val * scalar; });
+    return ret;
+}
+
+template<class T, restr_num rows, restr_num cols, class ScalarType>
+Matrix<T, rows, cols> operator*(const ScalarType& scalar, const Matrix<T, rows, cols>& matrix)
+{
+    return matrix * scalar;
+}
+
+template<class T, restr_num rows, restr_num cols>
 Matrix<T, rows, cols>::Row::Row()
+{
+}
+
+template<class T, restr_num rows, restr_num cols>
+Matrix<T, rows, cols>::Row::Row(const Row& other)
+    : m_row(other.m_row)
 {
 }
 
@@ -122,12 +161,11 @@ std::ostream& Matrix<T, rows, cols>::print_matrix(std::ostream& out) const
         do
         {
             out << (*this)[r][c] << " ";
-        } while (c != cols - 1 && (c++ == c || true));
+        } while (c != cols - 1 && (c++, true));
 
         out << std::endl;
 
-    // TODO: Maybe there's a better way
-    } while (r != rows - 1 && (r++ == r || true));
+    } while (r != rows - 1 && (r++, true));
 
     return out;
 }
@@ -149,6 +187,19 @@ void Matrix<T, rows, cols>::clean_empty()
         else
         {
             it->clean_empty();
+        }
+    }
+}
+
+template<class T, restr_num rows, restr_num cols>
+template<class Op>
+void Matrix<T, rows, cols>::do_each_element(Op op)
+{
+    for (auto& key_row_pair : m_matrix)
+    {
+        for (auto& ke_pair : key_row_pair.second.m_row)
+        {
+            ke_pair.second = op(ke_pair.second);
         }
     }
 }

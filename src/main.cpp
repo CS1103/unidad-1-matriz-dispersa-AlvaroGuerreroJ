@@ -33,7 +33,19 @@ int main()
         for (unsigned int j = 0; j < 15; j++)
         md[i][j] = i + j;
     }
-
     cout << endl << endl;
+
     md.print_matrix(cout);
+    cout << endl << endl;
+
+    (md * 1.5).print_matrix(cout);
+    cout << endl << endl;
+
+    md = 2 * md;
+    md.print_matrix(cout);
+    cout << endl << endl;
+
+    md = md * 1.4;
+    md.print_matrix(cout);
+    cout << endl << endl;
 }
