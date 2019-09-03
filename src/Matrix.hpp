@@ -12,7 +12,7 @@
 template<class T, restr_num rows, restr_num cols>
 class Matrix
 {
-private:
+public:
     typedef RestrictedNum<0, rows - 1> row_number;
     typedef RestrictedNum<0, cols - 1> col_number;
 
@@ -51,11 +51,15 @@ public:
     template<class Op>
     void do_each_element(Op op);
     std::ostream& print_matrix(std::ostream& out) const;
+    Matrix<T, cols, rows> transpose() const;
 
     Row& operator[](const row_number& row);
     const Row& operator[](const row_number& row) const;
 
-    Matrix<T, rows, cols> operator*(const Matrix<T, rows, cols>& other) const;
+    Matrix<T, rows, cols>& operator=(const Matrix<T, rows, cols>& other);
+
+    template<restr_num cols_other>
+    Matrix<T, rows, cols_other> operator*(const Matrix<T, cols, cols_other>& other) const;
     template<class ScalarType>
     Matrix<T, rows, cols> operator*(const ScalarType& scalar) const;
 
@@ -124,11 +128,45 @@ const typename Matrix<T, rows, cols>::Row& Matrix<T, rows, cols>::operator[](con
 }
 
 template<class T, restr_num rows, restr_num cols>
-Matrix<T, rows, cols> Matrix<T, rows, cols>::operator*(const Matrix<T, rows, cols>& other) const
+Matrix<T, rows, cols>& Matrix<T, rows, cols>::operator=(const Matrix<T, rows, cols>& other)
 {
-    // TODO: Implement
+    m_matrix = other.m_matrix;
+    return *this;
+}
 
-    return other;
+template<class T, restr_num rows, restr_num cols>
+template<restr_num cols_other>
+Matrix<T, rows, cols_other> Matrix<T, rows, cols>::operator*(const Matrix<T, cols, cols_other>& other) const
+{
+    using ret_row_number = row_number;
+    using ret_col_number = typename Matrix<T, cols, cols_other>::col_number;
+
+    ret_row_number ret_rows = ret_row_number::max_value;
+    ret_col_number ret_cols = ret_col_number::max_value;
+
+    Matrix<T, rows, cols_other> ret;
+
+    for (auto const& m0_row_pair : m_matrix)
+    {
+        ret_col_number ret_c = 0;
+        do
+        {
+            // Currently doing the position (m0_row_pair.first, ret_c)
+            T temp = T();
+            for (auto const& m0_value_pair : m0_row_pair.second.m_row)
+            {
+                temp += m0_value_pair.second * other[m0_value_pair.first][ret_c];
+            }
+
+            if (temp != default_t)
+            {
+                ret[m0_row_pair.first][ret_c] = temp;
+            }
+
+        } while (ret_c < cols_other - 1 && (ret_c++, true));
+    }
+
+    return ret;
 }
 
 template<class T, restr_num rows, restr_num cols>
@@ -214,6 +252,22 @@ std::ostream& Matrix<T, rows, cols>::print_matrix(std::ostream& out) const
     } while (r != rows - 1 && (r++, true));
 
     return out;
+}
+
+template<class T, restr_num rows, restr_num cols>
+Matrix<T, cols, rows> Matrix<T, rows, cols>::transpose() const
+{
+    Matrix<T, cols, rows> ret;
+
+    for (auto const& row_pair : m_matrix)
+    {
+        for (auto const& value_pair : row_pair.second.m_row)
+        {
+            ret[value_pair.first][row_pair.first] = value_pair.second;
+        }
+    }
+
+    return ret;
 }
 
 template<class T, restr_num rows, restr_num cols>

@@ -14,6 +14,10 @@ typedef size_t restr_num;
 template<restr_num min, restr_num max>
 class RestrictedNum
 {
+public:
+    static const RestrictedNum<min, max> min_value;
+    static const RestrictedNum<min, max> max_value;
+
 private:
     restr_num m_num;
 
@@ -42,6 +46,12 @@ public:
     RestrictedNum<min, max>& operator++();
     RestrictedNum<min, max> operator++(int);
 };
+
+
+template<restr_num min, restr_num max>
+const RestrictedNum<min, max> RestrictedNum<min, max>::min_value = min;
+template<restr_num min, restr_num max>
+const RestrictedNum<min, max> RestrictedNum<min, max>::max_value = max;
 
 template<restr_num min, restr_num max>
 template<class NumType>

@@ -71,4 +71,30 @@ int main()
 
     mi2.print_matrix(cout);
     cout << endl << endl;
+
+    Matrix<int, 3, 3> mi3 = mi0 * mi1;
+
+    mi3.print_matrix(cout);
+    cout << endl << endl;
+
+    Matrix<int, 2, 4> mi4 = {
+        {-9, -8, -7, -11},
+        {-6, -5, -4, -12},
+    };
+    Matrix<int, 4, 5> mi5 = {
+        {-9, -8, -7, -11, 99},
+        {-6, -5, -4, -12, -99},
+        {11, 12, 13, 14, 15},
+        {-21, -22, -23, -24, -25},
+    };
+
+    Matrix<int, 2, 5> mi6 = (mi4 * mi5);
+
+    mi6.print_matrix(cout);
+    cout << endl << endl;
+
+    auto mi7 = mi6.transpose();
+
+    mi7.print_matrix(cout);
+    cout << endl << endl;
 }
