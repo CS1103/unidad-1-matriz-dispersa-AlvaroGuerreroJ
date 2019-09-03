@@ -48,4 +48,27 @@ int main()
     md = md * 1.4;
     md.print_matrix(cout);
     cout << endl << endl;
+
+    Matrix<int, 3, 3> mi0 {
+        {0, 1, 2},
+        {3, 4, 5},
+        {6, 7, 8}
+    };
+
+    mi0.print_matrix(cout);
+    cout << endl << endl;
+
+    Matrix<int, 3, 3> mi1 = {
+        {-9, -8, -7},
+        {-6, -5, -4},
+        {-3, -2, -1}
+    };
+
+    mi1.print_matrix(cout);
+    cout << endl << endl;
+
+    Matrix<int, 3, 3> mi2 = mi0 + mi1;
+
+    mi2.print_matrix(cout);
+    cout << endl << endl;
 }

@@ -2,6 +2,7 @@
 #define GUARD_MATRIX_HPP
 
 #include <cstddef>
+#include <initializer_list>
 #include <map>
 #include <ostream>
 #include <string>
@@ -43,6 +44,7 @@ private:
 public:
     Matrix();
     Matrix(const Matrix<T, rows, cols>& other);
+    Matrix(std::initializer_list<std::initializer_list<T>> il);
     ~Matrix() = default;
 
     void clean_empty();
@@ -53,9 +55,11 @@ public:
     Row& operator[](const row_number& row);
     const Row& operator[](const row_number& row) const;
 
-    Matrix<T, rows, cols> operator*(const Matrix<T, rows, cols>& other);
+    Matrix<T, rows, cols> operator*(const Matrix<T, rows, cols>& other) const;
     template<class ScalarType>
     Matrix<T, rows, cols> operator*(const ScalarType& scalar) const;
+
+    Matrix<T, rows, cols> operator+(const Matrix<T, rows, cols>& other) const;
 };
 
 template<class T, restr_num rows, restr_num cols>
@@ -73,6 +77,30 @@ template<class T, restr_num rows, restr_num cols>
 Matrix<T, rows, cols>::Matrix(const Matrix<T, rows, cols>& other)
     : m_matrix(other.m_matrix)
 {
+}
+
+template<class T, restr_num rows, restr_num cols>
+Matrix<T, rows, cols>::Matrix(std::initializer_list<std::initializer_list<T>> il)
+{
+    row_number cur_row_index = 0;
+    auto cur_row_it = il.begin();
+
+    do
+    {
+        col_number cur_col_index = 0;
+        auto cur_val_it = cur_row_it->begin();
+
+        do
+        {
+            (*this)[cur_row_index][cur_col_index] = *cur_val_it;
+
+            cur_val_it++;
+
+        } while (cur_val_it != cur_row_it->end() &&  (cur_col_index++, true));
+
+        cur_row_it++;
+
+    } while (cur_row_it != il.end() && (cur_row_index++, true));
 }
 
 template<class T, restr_num rows, restr_num cols>
@@ -96,7 +124,7 @@ const typename Matrix<T, rows, cols>::Row& Matrix<T, rows, cols>::operator[](con
 }
 
 template<class T, restr_num rows, restr_num cols>
-Matrix<T, rows, cols> Matrix<T, rows, cols>::operator*(const Matrix<T, rows, cols>& other)
+Matrix<T, rows, cols> Matrix<T, rows, cols>::operator*(const Matrix<T, rows, cols>& other) const
 {
     // TODO: Implement
 
@@ -109,6 +137,24 @@ Matrix<T, rows, cols> Matrix<T, rows, cols>::operator*(const ScalarType& scalar)
 {
     Matrix<T, rows, cols> ret(*this);
     ret.do_each_element([scalar](const T& val)->T{ return val * scalar; });
+    return ret;
+}
+
+template<class T, restr_num rows, restr_num cols>
+Matrix<T, rows, cols> Matrix<T, rows, cols>::operator+(const Matrix<T, rows, cols>& other) const
+{
+    Matrix<T, rows, cols> ret(other);
+
+    for (auto const& row_pair : this->m_matrix)
+    {
+        row_number r = row_pair.first;
+        for (auto const& value_pair : row_pair.second.m_row)
+        {
+            col_number c = value_pair.first;
+            ret[r][c] += value_pair.second;
+        }
+    }
+
     return ret;
 }
 
